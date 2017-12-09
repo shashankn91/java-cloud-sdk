@@ -11,4 +11,9 @@ public class ApiBusiness extends Api {
 	public Business get(String businessId) {
 		return this.get(Business.class, businessId);
 	}
+
+    public Business getByStoreDeviceId(String storeDeviceIsd) {
+        return this.getBusinessFromStoreDeviceId(Business.class, storeDeviceIsd);
+    }
+
 }

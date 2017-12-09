@@ -1,12 +1,7 @@
 package co.poynt.api.sdk;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import co.poynt.api.model.Code;
+import co.poynt.api.model.ErrorInfo;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -14,8 +9,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 
-import co.poynt.api.model.Code;
-import co.poynt.api.model.ErrorInfo;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public abstract class Api {
 	protected PoyntSdk sdk;
@@ -95,6 +94,31 @@ public abstract class Api {
 
 		String baseUrl = this.endPoint + "/" + itemId;
 		HttpGet get = this.createGetRequest(baseUrl);
+
+		get.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+		T result = null;
+		try {
+			HttpResponse response = this.sdk.getHttpClient().execute(get);
+			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+				result = (T) this.readResponse(response, resourceType);
+			} else {
+				handleError(response);
+			}
+		} catch (IOException e) {
+			throw new PoyntSdkException("Failed to get resource.");
+		} finally {
+			get.releaseConnection();
+		}
+
+		return result;
+	}
+
+	public <T> T getBusinessFromStoreDeviceId(Class<T> resourceType, String storeDeviceId) {
+		String accessToken = sdk.getAccessToken();
+
+		String baseUrl = this.endPoint + "?" + "storeDeviceId="+storeDeviceId ;
+		HttpGet get = this.createGetRequest(baseUrl);
+		System.out.print(baseUrl);
 
 		get.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
 		T result = null;
